@@ -28,8 +28,6 @@
       background: var(--navy); color: var(--white);
       min-height: 100vh; line-height: 1.5;
     }
-
-    /* Header */
     header {
       background: var(--navy-mid); border-bottom: 1px solid var(--navy-border);
       padding: 0 2rem; display: flex; align-items: center;
@@ -54,11 +52,7 @@
       background: var(--navy); border: 1px solid var(--navy-border);
       padding: 5px 14px; border-radius: 20px; white-space: nowrap;
     }
-
-    /* Main */
     main { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
-
-    /* Controls */
     .controls {
       display: flex; align-items: flex-start; justify-content: space-between;
       flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem;
@@ -74,7 +68,7 @@
       cursor: pointer; transition: border-color 0.15s;
     }
     select {
-      padding: 8px 34px 8px 12px; appearance: none; min-width: 200px;
+      padding: 8px 34px 8px 12px; appearance: none; min-width: 220px;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a9ab8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 10px center;
     }
@@ -84,8 +78,6 @@
       font-weight: 600; display: flex; align-items: center; gap: 6px;
     }
     .btn-refresh:hover { background: #2563eb; }
-
-    /* KPI Cards */
     .kpi-row {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
       gap: 1rem; margin-bottom: 1.75rem;
@@ -105,15 +97,11 @@
     .kpi-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 0.45rem; }
     .kpi-value { font-size: 2rem; font-weight: 800; line-height: 1; }
     .kpi-sub   { font-size: 0.73rem; color: var(--muted); margin-top: 4px; }
-
-    /* Dashboard Grid */
     .dashboard-grid {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 1.25rem; align-items: start;
     }
     @media (max-width: 920px) { .dashboard-grid { grid-template-columns: 1fr; } }
-
-    /* Card */
     .card {
       background: var(--navy-card); border: 1px solid var(--navy-border);
       border-radius: var(--radius); overflow: hidden;
@@ -125,13 +113,9 @@
     }
     .card-title    { font-size: 0.9rem; font-weight: 700; }
     .card-subtitle { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
-
-    /* Legend */
     .legend { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; flex-shrink: 0; }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.71rem; color: var(--muted); }
     .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
-
-    /* Table */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
     thead tr { background: rgba(255,255,255,0.03); }
@@ -161,12 +145,8 @@
       display: inline-block; width: 7px; height: 7px;
       border-radius: 50%; margin-right: 8px; flex-shrink: 0; vertical-align: middle;
     }
-
-    /* Chart */
     .chart-wrap { padding: 1.25rem; }
     #perfChart  { width: 100% !important; }
-
-    /* Loading */
     #loading-overlay {
       position: fixed; inset: 0; background: var(--navy);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -179,15 +159,11 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     #loading-overlay p { font-size: 0.85rem; color: var(--muted); }
-
-    /* Error */
     .error-banner {
       display: none; background: var(--red-bg); border: 1px solid var(--red);
       color: var(--red); border-radius: var(--radius);
       padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.85rem;
     }
-
-    /* Footer */
     footer {
       text-align: center; padding: 1.5rem; font-size: 0.72rem; color: var(--muted);
       border-top: 1px solid var(--navy-border); margin-top: 2.5rem;
@@ -217,7 +193,7 @@
 
 <main>
   <div class="error-banner" id="error-banner">
-    ⚠ &nbsp;Unable to load data. Check your internet connection and try refreshing.
+    ⚠ &nbsp;Unable to load data. Check your connection and try refreshing.
   </div>
 
   <div class="controls">
@@ -228,9 +204,9 @@
     <div class="controls-right">
       <span class="select-label">Cohort Week:</span>
       <select id="week-select">
-        <option value="">Loading…</option>
+        <option>Loading…</option>
       </select>
-      <button class="btn-refresh" onclick="fetchAndLoad()">
+      <button class="btn-refresh" onclick="fetchData()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="23 4 23 10 17 10"/>
           <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -278,7 +254,7 @@
         <div class="legend">
           <div class="legend-item"><div class="legend-swatch" style="background:var(--green)"></div>100%</div>
           <div class="legend-item"><div class="legend-swatch" style="background:var(--orange)"></div>1–99%</div>
-          <div class="legend-item"><div class="legend-swatch" style="background:var(--red)"></div>0% / N/A</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--red)"></div>0%</div>
         </div>
       </div>
       <div class="table-wrap">
@@ -316,125 +292,111 @@
 </footer>
 
 <script>
-  // ── Config ──────────────────────────────────────────────────────────
-  // Replace this with your deployed Google Apps Script Web App URL
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwQX7Z9Q1Q2CJxi7JnwN20n9N-6_jlfvgqfrAbFicifmQT8cdt6R8VYM6sTJq1sY7d/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzwQX7Z9Q1Q2CJxi7JnwN20n9N-6_jlfvgqfrAbFicifmQT8cdt6R8VYM6sTJq1sY7d/exec';
 
-  const BRETON_CODES = new Set([
-    '846','1652','182599','183136','184393','172','273','1649',
-    '182487','183098','183167','183275','183279','184057','184470',
-    '185494','185761','186825','186826'
-  ]);
-
-  // ── State ────────────────────────────────────────────────────────────
-  let allData   = [];
+  let allData   = [];   // full API response, stored once
   let chart     = null;
   let countdown = 300;
   let lastStr   = '';
 
-  // Strip all whitespace/control characters from both sides
-  function clean(str) {
-    return String(str).replace(/[\r\n\t]/g, '').trim();
+  // ── Date helpers ──────────────────────────────────────────────────────
+  // The API returns cohort_date as e.g. "Mon Dec 22 2025 00:00:00 GMT-0500 (Eastern Standard Time)"
+  // We extract the "Mon Dec 22 2025" portion and parse it into a real Date.
+
+  function parseCohortDate(raw) {
+    // Pull out the first occurrence of "Mon Dec 22 2025" style (3-letter day, 3-letter month, day, year)
+    const m = String(raw).match(/[A-Za-z]{3}\s+[A-Za-z]{3}\s+\d{1,2}\s+\d{4}/);
+    if (m) return new Date(m[0]);
+    // Fallback: let the browser try directly
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
   }
 
-  // ── Fetch JSON from Apps Script ───────────────────────────────────────
-  async function fetchAndLoad() {
+  function formatLabel(dateObj) {
+    if (!dateObj) return 'Unknown';
+    return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  // Stable sort key: "YYYYMMDD" string — used to deduplicate and sort weeks
+  function dateKey(dateObj) {
+    if (!dateObj) return '00000000';
+    const y = dateObj.getFullYear();
+    const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const d = String(dateObj.getDate()).padStart(2, '0');
+    return y + m + d;
+  }
+
+  // ── Fetch ─────────────────────────────────────────────────────────────
+  async function fetchData() {
     document.getElementById('loading-overlay').style.display = 'flex';
     document.getElementById('error-banner').style.display   = 'none';
 
     try {
-      const res  = await fetch(APPS_SCRIPT_URL);
+      const res  = await fetch(API_URL);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
-      console.log('Rows received:', json.length);
-      console.log('Sample rows:', json.slice(0, 3));
-      parseAndStore(json);
+
+      console.log('API rows received:', json.length);
+      console.log('First row:', json[0]);
+
+      // Attach a parsed Date and stable key to every row once
+      allData = json.map(row => ({
+        raw_date:    row.cohort_date,
+        date_obj:    parseCohortDate(row.cohort_date),
+        date_key:    dateKey(parseCohortDate(row.cohort_date)),
+        date_label:  formatLabel(parseCohortDate(row.cohort_date)),
+        name:        String(row.segment_name || '').replace(/^ANYTIME FITNESS\s*/i, '').trim(),
+        attempt:     Number(row.attempt_rate),
+        contact:     Number(row.contact_rate),
+      }));
+
+      console.log('Parsed allData sample:', allData.slice(0, 3));
+      console.log('Unique date_keys:', [...new Set(allData.map(r => r.date_key + ' → ' + r.date_label))]);
+
+      buildDropdown();
+
     } catch (err) {
-      console.error('fetchAndLoad error:', err);
+      console.error('fetchData error:', err);
       document.getElementById('loading-overlay').style.display = 'none';
       document.getElementById('error-banner').style.display   = 'block';
     }
   }
 
-  // Parse "MM/DD/YYYY" into a Date object safely (avoids timezone shifts from new Date())
-  function parseMDY(raw) {
-    const s = clean(raw);
-    const parts = s.split('/');
-    if (parts.length === 3) {
-      const m = Number(parts[0]), d = Number(parts[1]), y = Number(parts[2]);
-      if (!isNaN(m) && !isNaN(d) && !isNaN(y)) return new Date(y, m - 1, d);
+  // ── Build dropdown from unique weeks ─────────────────────────────────
+  function buildDropdown() {
+    // Collect unique weeks as { date_key, date_label }, sorted newest first
+    const seen  = new Set();
+    const weeks = [];
+    for (const row of allData) {
+      if (!seen.has(row.date_key)) {
+        seen.add(row.date_key);
+        weeks.push({ key: row.date_key, label: row.date_label });
+      }
     }
-    return null;
-  }
+    weeks.sort((a, b) => b.key.localeCompare(a.key)); // newest first
 
-  // Convert "MM/DD/YYYY" → display label "Dec 22, 2025"
-  function formatDateLabel(raw) {
-    const d = parseMDY(raw);
-    if (!d) return clean(raw); // fallback: return as-is
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }
-
-  // ── Store JSON rows into flat allData array ───────────────────────────
-  // Apps Script returns: [{ cohort_date, segment_code, segment_name, attempt_rate, contact_rate }, ...]
-  // cohort_date is "MM/DD/YYYY". We store the original value as the key and compute the
-  // display label separately — this keeps filtering exact and avoids any string mismatch.
-  function parseAndStore(json) {
-    allData = [];
-
-    for (const row of json) {
-      const raw_date    = clean(row['cohort_date'] || '');
-      const code        = clean(row['segment_code'] || '');
-      const name        = clean(row['segment_name'] || '').replace(/^ANYTIME FITNESS\s*/i, '').trim();
-      const attempt     = row['attempt_rate'] !== null && row['attempt_rate'] !== undefined
-                            ? Number(row['attempt_rate']) : null;
-      const contact     = row['contact_rate'] !== null && row['contact_rate'] !== undefined
-                            ? Number(row['contact_rate']) : null;
-
-      // Skip rows with no date or not a Breton club
-      if (!raw_date || !BRETON_CODES.has(code)) continue;
-
-      allData.push({ cohort_date: raw_date, name, attempt, contact });
-    }
-
-    console.log('Total Breton rows stored:', allData.length);
-    console.log('Sample allData:', allData.slice(0, 4));
-
-    // Unique raw date strings, sorted newest first using parsed Date objects
-    const uniqueDates = [...new Set(allData.map(r => r.cohort_date))].sort((a, b) => {
-      const da = parseMDY(a), db = parseMDY(b);
-      return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
-    });
-
-    console.log('Unique cohort dates:', uniqueDates);
-
-    // Dropdown: value = raw "MM/DD/YYYY" string (used for exact filtering)
-    //           label = readable "Week of Dec 22, 2025"
     const sel = document.getElementById('week-select');
-    sel.innerHTML = uniqueDates.map(d =>
-      '<option value="' + d + '">Week of ' + formatDateLabel(d) + '</option>'
+    sel.innerHTML = weeks.map(w =>
+      '<option value="' + w.key + '">Week of ' + w.label + '</option>'
     ).join('');
 
-    // Render the first (newest) week immediately
+    // Render the newest week immediately
     renderWeek();
   }
 
-  // ── Dropdown change → filter and re-render ───────────────────────────
+  // ── Filter + render ───────────────────────────────────────────────────
   function renderWeek() {
-    const selectedDate = clean(document.getElementById('week-select').value);
+    const selectedKey = document.getElementById('week-select').value;
 
-    console.log('renderWeek() — selectedDate:', JSON.stringify(selectedDate));
+    console.log('renderWeek() — selectedKey:', selectedKey);
 
-    // Filter allData to only rows where cohort_date exactly matches
-    const filtered = allData.filter(r => clean(r.cohort_date) === selectedDate);
+    // Filter allData to rows whose date_key exactly matches the selected key
+    const filtered = allData.filter(r => r.date_key === selectedKey);
 
-    console.log('Filtered row count:', filtered.length);
-    console.log('Filtered rows:', filtered);
+    console.log('Filtered rows:', filtered.length);
 
-    // Sort: 100% → partial → 0%/null
-    const clubs = filtered.slice().sort((a, b) => {
-      const rank = v => (v === null ? -1 : v);
-      return rank(b.attempt) - rank(a.attempt);
-    });
+    // Sort: 100% → partial → 0%
+    const clubs = filtered.slice().sort((a, b) => b.attempt - a.attempt);
 
     renderKPIs(clubs);
     renderTable(clubs);
@@ -447,35 +409,33 @@
     document.getElementById('loading-overlay').style.display = 'none';
   }
 
-  // ── KPI cards ───────────────────────────────────────────────────────
+  // ── KPI cards ─────────────────────────────────────────────────────────
   function renderKPIs(clubs) {
-    const withA = clubs.filter(c => c.attempt !== null);
-    const withC = clubs.filter(c => c.contact !== null);
-    const avgA  = withA.length ? Math.round(withA.reduce((s, c) => s + c.attempt, 0) / withA.length) : 0;
-    const avgC  = withC.length ? Math.round(withC.reduce((s, c) => s + c.contact, 0) / withC.length) : 0;
+    const avgA = clubs.length ? Math.round(clubs.reduce((s, c) => s + c.attempt, 0) / clubs.length) : 0;
+    const avgC = clubs.length ? Math.round(clubs.reduce((s, c) => s + c.contact, 0) / clubs.length) : 0;
 
     document.getElementById('kpi-total').textContent   = clubs.length;
     document.getElementById('kpi-attempt').textContent = avgA + '%';
     document.getElementById('kpi-contact').textContent = avgC + '%';
-    document.getElementById('kpi-full').textContent    = clubs.filter(c => c.attempt >= 100).length;
-    document.getElementById('kpi-zero').textContent    = clubs.filter(c => !c.attempt).length;
+    document.getElementById('kpi-full').textContent    = clubs.filter(c => c.attempt === 100).length;
+    document.getElementById('kpi-zero').textContent    = clubs.filter(c => c.attempt === 0).length;
     document.getElementById('card-attempt').className  = kpiColor(avgA);
     document.getElementById('card-contact').className  = kpiColor(avgC);
   }
 
-  // ── Table ────────────────────────────────────────────────────────────
+  // ── Table ─────────────────────────────────────────────────────────────
   function renderTable(clubs) {
     document.getElementById('table-body').innerHTML = clubs.map((c, i) => `
       <tr>
-        <td style="color:var(--muted);font-size:.74rem;font-weight:600;width:32px">${String(i+1).padStart(2,'0')}</td>
+        <td style="color:var(--muted);font-size:.74rem;font-weight:600;width:32px">${String(i + 1).padStart(2, '0')}</td>
         <td>
           <div style="display:flex;align-items:center">
             <span class="dot" style="background:${dotColor(c.attempt)}"></span>
             <span class="club-name">${c.name}</span>
           </div>
         </td>
-        <td class="center"><span class="badge ${badgeClass(c.attempt)}">${badgeText(c.attempt)}</span></td>
-        <td class="center"><span class="badge ${badgeClass(c.contact)}">${badgeText(c.contact)}</span></td>
+        <td class="center"><span class="badge ${badgeClass(c.attempt)}">${c.attempt}%</span></td>
+        <td class="center"><span class="badge ${badgeClass(c.contact)}">${c.contact}%</span></td>
       </tr>
     `).join('');
   }
@@ -484,7 +444,7 @@
   function renderChart(clubs) {
     if (chart) chart.destroy();
     const canvas = document.getElementById('perfChart');
-    canvas.style.height = Math.max(400, clubs.length * 36) + 'px';
+    canvas.style.height = Math.max(300, clubs.length * 42) + 'px';
 
     chart = new Chart(canvas.getContext('2d'), {
       type: 'bar',
@@ -493,14 +453,14 @@
         datasets: [
           {
             label: 'Attempt Rate',
-            data: clubs.map(c => c.attempt ?? 0),
+            data: clubs.map(c => c.attempt),
             backgroundColor: clubs.map(c => barColor(c.attempt, 0.85)),
             borderColor:     clubs.map(c => barColor(c.attempt, 1)),
             borderWidth: 1, borderRadius: 4,
           },
           {
             label: 'Contact Rate',
-            data: clubs.map(c => c.contact ?? 0),
+            data: clubs.map(c => c.contact),
             backgroundColor: clubs.map(c => barColor(c.contact, 0.35)),
             borderColor:     clubs.map(c => barColor(c.contact, 0.65)),
             borderWidth: 1, borderRadius: 4,
@@ -535,23 +495,21 @@
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────
+  // ── Color helpers ─────────────────────────────────────────────────────
   function badgeClass(v) {
-    if (v === null) return 'badge-red';
-    if (v >= 100)   return 'badge-green';
-    if (v > 0)      return 'badge-orange';
+    if (v >= 100) return 'badge-green';
+    if (v > 0)    return 'badge-orange';
     return 'badge-red';
   }
-  function badgeText(v) { return v === null ? '#N/A' : v + '%'; }
-  function dotColor(v)  {
-    if (!v) return 'var(--red)';
+  function dotColor(v) {
     if (v >= 100) return 'var(--green)';
-    return 'var(--orange)';
+    if (v > 0)    return 'var(--orange)';
+    return 'var(--red)';
   }
   function barColor(v, a) {
-    if (!v) return 'rgba(239,68,68,' + a + ')';
-    if (v >= 100) return 'rgba(34,197,94,' + a + ')';
-    return 'rgba(245,158,11,' + a + ')';
+    if (v >= 100) return 'rgba(34,197,94,'  + a + ')';
+    if (v > 0)    return 'rgba(245,158,11,' + a + ')';
+    return              'rgba(239,68,68,'   + a + ')';
   }
   function kpiColor(v) {
     if (v >= 100) return 'kpi-card green';
@@ -559,24 +517,23 @@
     return 'kpi-card red';
   }
 
-  // ── Countdown pill ────────────────────────────────────────────────────
+  // ── Countdown + auto-refresh ──────────────────────────────────────────
   setInterval(() => {
     countdown--;
-    if (countdown <= 0) { fetchAndLoad(); return; }
+    if (countdown <= 0) { fetchData(); return; }
     const m = Math.floor(countdown / 60);
     const s = String(countdown % 60).padStart(2, '0');
     document.getElementById('refresh-pill').textContent =
       lastStr + (lastStr ? ' · ' : '') + m + ':' + s;
   }, 1000);
 
-  // Auto-refresh every 5 minutes
-  setInterval(fetchAndLoad, 5 * 60 * 1000);
+  setInterval(fetchData, 5 * 60 * 1000);
 
-  // ── Boot ──────────────────────────────────────────────────────────────
-  // Attach dropdown listener once at startup
+  // ── Wire dropdown ─────────────────────────────────────────────────────
   document.getElementById('week-select').addEventListener('change', renderWeek);
 
-  fetchAndLoad();
+  // ── Boot ──────────────────────────────────────────────────────────────
+  fetchData();
 </script>
 </body>
 </html>
