@@ -317,9 +317,7 @@
 
 <script>
   // ── Config ──────────────────────────────────────────────────────────
-  const SHEET_ID     = '1_Ms7p7rRJPSwbsmfmdsEnYPyGl71k3gCu9ZNFRIres4';
-  const RAW_DATA_GID = '1487060119';
-  const PROXY        = 'https://api.allorigins.win/raw?url=';
+  const CSV_URL = '/api/data';
 
   const BRETON_CODES = new Set([
     '846','1652','182599','183136','184393','172','273','1649',
@@ -344,14 +342,11 @@
     document.getElementById('loading-overlay').style.display = 'flex';
     document.getElementById('error-banner').style.display   = 'none';
 
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=' + RAW_DATA_GID;
-    const url      = PROXY + encodeURIComponent(sheetUrl);
-
     try {
-      const res = await fetch(url);
+      const res = await fetch(CSV_URL);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const csv = await res.text();
-      if (csv.includes('Request Timeout') || csv.includes('Oops')) throw new Error('Proxy timeout');
+      console.log('CSV fetched, first 200 chars:', csv.slice(0, 200));
       parseAndStore(csv);
     } catch (err) {
       console.error('fetchAndLoad error:', err);
