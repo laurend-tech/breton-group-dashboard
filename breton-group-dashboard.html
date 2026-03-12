@@ -4,130 +4,163 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Breton Group | Club Performance Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --navy:        #0d1b2e;
-      --navy-mid:    #132338;
-      --navy-card:   #1a2e46;
-      --navy-border: #243c5a;
-      --accent:      #3b82f6;
-      --white:       #f0f6ff;
-      --muted:       #7a9ab8;
-      --green:       #22c55e;
-      --green-bg:    rgba(34,197,94,0.12);
-      --orange:      #f59e0b;
-      --orange-bg:   rgba(245,158,11,0.12);
-      --red:         #ef4444;
-      --red-bg:      rgba(239,68,68,0.12);
+      --violet:      #4F31F5;
+      --violet-dark: #3d24c4;
+      --violet-glow: rgba(79,49,245,0.08);
+      --bg:          #FFFFFF;
+      --card:        #F5F5F5;
+      --border:      #E2E2E2;
+      --text:        #000000;
+      --muted:       #666666;
+      --green:       #16a34a;
+      --green-bg:    rgba(22,163,74,0.10);
+      --orange:      #d97706;
+      --orange-bg:   rgba(217,119,6,0.10);
+      --red:         #dc2626;
+      --red-bg:      rgba(220,38,38,0.10);
       --radius:      10px;
     }
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--navy); color: var(--white);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
       min-height: 100vh; line-height: 1.5;
     }
+
+    /* ── Header ── */
     header {
-      background: var(--navy-mid); border-bottom: 1px solid var(--navy-border);
+      background: #000000;
       padding: 0 2rem; display: flex; align-items: center;
       justify-content: space-between; height: 72px;
       position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.08);
     }
-    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .header-left { display: flex; align-items: center; gap: 1.25rem; }
+
     .logo-mark {
-      width: 42px; height: 42px;
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      border-radius: 9px; display: flex; align-items: center;
-      justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0;
+      width: 44px; height: 44px;
+      background: var(--violet);
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; font-weight: 800; font-size: 0.85rem;
+      letter-spacing: -0.5px; flex-shrink: 0; color: #fff;
     }
-    .brand-block h1 { font-size: 1.15rem; font-weight: 700; }
-    .brand-block p  { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-    .header-right   { display: flex; align-items: center; gap: 1rem; }
-    .powered-by     { font-size: 0.7rem; color: var(--muted); text-align: right; line-height: 1.4; }
-    .powered-by strong { color: var(--accent); }
+
+    .brand-block { display: flex; flex-direction: column; gap: 1px; }
+    .brand-block .af-label {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(255,255,255,0.5);
+    }
+    .brand-block h1 {
+      font-size: 1.15rem; font-weight: 700; color: #fff;
+      letter-spacing: 0.01em; line-height: 1.1;
+    }
+    .brand-block .sub {
+      font-size: 0.68rem; color: rgba(255,255,255,0.5);
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .powered-by   { font-size: 0.7rem; color: rgba(255,255,255,0.45); text-align: right; line-height: 1.4; }
+    .powered-by strong { color: var(--violet); }
     .pill {
-      font-size: 0.72rem; color: var(--muted);
-      background: var(--navy); border: 1px solid var(--navy-border);
+      font-size: 0.72rem; color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
       padding: 5px 14px; border-radius: 20px; white-space: nowrap;
     }
+
+    /* ── Main ── */
     main { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
     .controls {
       display: flex; align-items: flex-start; justify-content: space-between;
       flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem;
     }
-    .controls-left h2 { font-size: 1.35rem; font-weight: 700; }
+    .controls-left h2 { font-size: 1.35rem; font-weight: 700; color: var(--text); }
     .controls-left p  { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
     .controls-right   { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
     .select-label     { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+
     select, button {
       font-family: inherit; font-size: 0.85rem;
-      border-radius: var(--radius); border: 1px solid var(--navy-border);
-      background: var(--navy-card); color: var(--white);
+      border-radius: var(--radius); border: 1px solid var(--border);
+      background: #fff; color: var(--text);
       cursor: pointer; transition: border-color 0.15s;
     }
     select {
       padding: 8px 34px 8px 12px; appearance: none; min-width: 220px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a9ab8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 10px center;
+      background-color: #fff;
     }
-    select:hover, select:focus { border-color: var(--accent); outline: none; }
+    select:hover, select:focus { border-color: var(--violet); outline: none; }
     .btn-refresh {
-      padding: 8px 18px; background: var(--accent); border: none;
-      font-weight: 600; display: flex; align-items: center; gap: 6px;
+      padding: 8px 18px; background: var(--violet); border: none;
+      font-weight: 600; display: flex; align-items: center; gap: 6px; color: #fff;
     }
-    .btn-refresh:hover { background: #2563eb; }
+    .btn-refresh:hover { background: var(--violet-dark); }
+
+    /* ── KPI Cards ── */
     .kpi-row {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
       gap: 1rem; margin-bottom: 1.75rem;
     }
     .kpi-card {
-      background: var(--navy-card); border: 1px solid var(--navy-border);
+      background: var(--card); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 1.2rem 1.4rem;
       position: relative; overflow: hidden;
     }
     .kpi-card::before {
       content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
     }
-    .kpi-card.blue::before   { background: var(--accent); }
+    .kpi-card.violet::before { background: var(--violet); }
     .kpi-card.green::before  { background: var(--green); }
     .kpi-card.orange::before { background: var(--orange); }
     .kpi-card.red::before    { background: var(--red); }
     .kpi-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 0.45rem; }
-    .kpi-value { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .kpi-value { font-size: 2rem; font-weight: 800; line-height: 1; color: var(--text); }
     .kpi-sub   { font-size: 0.73rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Dashboard Grid ── */
     .dashboard-grid {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 1.25rem; align-items: start;
     }
     @media (max-width: 920px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+    /* ── Cards ── */
     .card {
-      background: var(--navy-card); border: 1px solid var(--navy-border);
+      background: #fff; border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
     .card-header {
-      padding: 1rem 1.25rem 0.85rem; border-bottom: 1px solid var(--navy-border);
+      padding: 1rem 1.25rem 0.85rem; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     }
-    .card-title    { font-size: 0.9rem; font-weight: 700; }
+    .card-title    { font-size: 0.9rem; font-weight: 700; color: var(--text); }
     .card-subtitle { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
     .legend { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; flex-shrink: 0; }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.71rem; color: var(--muted); }
     .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* ── Table ── */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    thead tr { background: rgba(255,255,255,0.03); }
+    thead tr { background: var(--card); }
     th {
       padding: 10px 14px; text-align: left; font-size: 0.69rem;
       text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted);
-      border-bottom: 1px solid var(--navy-border); white-space: nowrap;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
     }
     th.center { text-align: center; }
-    td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
     td.center { text-align: center; }
-    tbody tr:hover { background: rgba(59,130,246,0.05); }
+    tbody tr:hover { background: var(--violet-glow); }
     tbody tr:last-child td { border-bottom: none; }
     .club-name {
       font-weight: 500; font-size: 0.8rem;
@@ -145,28 +178,36 @@
       display: inline-block; width: 7px; height: 7px;
       border-radius: 50%; margin-right: 8px; flex-shrink: 0; vertical-align: middle;
     }
-    .chart-wrap { padding: 1.25rem; }
+
+    /* ── Chart ── */
+    .chart-wrap { padding: 1.25rem; background: #fff; }
     #perfChart  { width: 100% !important; }
+
+    /* ── Loading ── */
     #loading-overlay {
-      position: fixed; inset: 0; background: var(--navy);
+      position: fixed; inset: 0; background: #fff;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 1rem; z-index: 999;
     }
     .spinner {
-      width: 44px; height: 44px; border: 3px solid var(--navy-border);
-      border-top-color: var(--accent); border-radius: 50%;
+      width: 44px; height: 44px; border: 3px solid var(--border);
+      border-top-color: var(--violet); border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     #loading-overlay p { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── Error ── */
     .error-banner {
       display: none; background: var(--red-bg); border: 1px solid var(--red);
       color: var(--red); border-radius: var(--radius);
       padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.85rem;
     }
+
+    /* ── Footer ── */
     footer {
       text-align: center; padding: 1.5rem; font-size: 0.72rem; color: var(--muted);
-      border-top: 1px solid var(--navy-border); margin-top: 2.5rem;
+      border-top: 1px solid var(--border); margin-top: 2.5rem;
     }
   </style>
 </head>
@@ -181,8 +222,9 @@
   <div class="header-left">
     <div class="logo-mark">BG</div>
     <div class="brand-block">
+      <span class="af-label">Anytime Fitness</span>
       <h1>Breton Group</h1>
-      <p>Anytime Fitness &nbsp;·&nbsp; Club Performance Dashboard</p>
+      <span class="sub">Club Performance Dashboard</span>
     </div>
   </div>
   <div class="header-right">
@@ -217,7 +259,7 @@
   </div>
 
   <div class="kpi-row">
-    <div class="kpi-card blue">
+    <div class="kpi-card violet">
       <div class="kpi-label">Total Clubs</div>
       <div class="kpi-value" id="kpi-total">–</div>
       <div class="kpi-sub">This cohort week</div>
@@ -472,22 +514,22 @@
         plugins: {
           legend: {
             position: 'top',
-            labels: { color: '#7a9ab8', font: { size: 11 }, boxWidth: 12, padding: 16 },
+            labels: { color: CHART_AXIS_COLOR, font: { size: 11 }, boxWidth: 12, padding: 16 },
           },
           tooltip: {
-            backgroundColor: '#1a2e46', borderColor: '#243c5a', borderWidth: 1,
-            titleColor: '#f0f6ff', bodyColor: '#7a9ab8', padding: 10,
+            backgroundColor: CHART_TOOLTIP_BG, borderColor: '#444', borderWidth: 1,
+            titleColor: '#fff', bodyColor: CHART_AXIS_COLOR, padding: 10,
             callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw + '%' },
           },
         },
         scales: {
           x: {
             min: 0, max: 110,
-            ticks: { color: '#7a9ab8', font: { size: 10 }, callback: v => v + '%' },
-            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: CHART_AXIS_COLOR, font: { size: 10 }, callback: v => v + '%' },
+            grid: { color: CHART_GRID_COLOR },
           },
           y: {
-            ticks: { color: '#c8d9ea', font: { size: 10.5 } },
+            ticks: { color: '#333333', font: { size: 10.5 } },
             grid: { display: false },
           },
         },
@@ -516,6 +558,11 @@
     if (v > 0)    return 'kpi-card orange';
     return 'kpi-card red';
   }
+
+  // Chart colors for light theme
+  const CHART_AXIS_COLOR  = '#666666';
+  const CHART_GRID_COLOR  = 'rgba(0,0,0,0.06)';
+  const CHART_TOOLTIP_BG  = '#1a1a1a';
 
   // ── Countdown + auto-refresh ──────────────────────────────────────────
   setInterval(() => {
