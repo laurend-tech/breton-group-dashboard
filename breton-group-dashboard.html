@@ -317,7 +317,8 @@
 
 <script>
   // ── Config ──────────────────────────────────────────────────────────
-  const CSV_URL = '/api/data';
+  // Replace this with your deployed Google Apps Script Web App URL
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwQX7Z9Q1Q2CJxi7JnwN20n9N-6_jlfvgqfrAbFicifmQT8cdt6R8VYM6sTJq1sY7d/exec';
 
   const BRETON_CODES = new Set([
     '846','1652','182599','183136','184393','172','273','1649',
@@ -325,29 +326,29 @@
     '185494','185761','186825','186826'
   ]);
 
-  // ── State: flat array of every Breton row ────────────────────────────
-  // Each entry: { cohort_date: string, name: string, attempt: number|null, contact: number|null }
-  let allData = [];
-  let chart   = null;
+  // ── State ────────────────────────────────────────────────────────────
+  let allData   = [];
+  let chart     = null;
   let countdown = 300;
   let lastStr   = '';
 
-  // Strip ALL non-printable / whitespace chars including \r, \n, \t, nbsp
+  // Strip all whitespace/control characters from both sides
   function clean(str) {
     return String(str).replace(/[\r\n\t]/g, '').trim();
   }
 
-  // ── Fetch ─────────────────────────────────────────────────────────────
+  // ── Fetch JSON from Apps Script ───────────────────────────────────────
   async function fetchAndLoad() {
     document.getElementById('loading-overlay').style.display = 'flex';
     document.getElementById('error-banner').style.display   = 'none';
 
     try {
-      const res = await fetch(CSV_URL);
+      const res  = await fetch(APPS_SCRIPT_URL);
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      const csv = await res.text();
-      console.log('CSV fetched, first 200 chars:', csv.slice(0, 200));
-      parseAndStore(csv);
+      const json = await res.json();
+      console.log('Rows received:', json.length);
+      console.log('Sample rows:', json.slice(0, 3));
+      parseAndStore(json);
     } catch (err) {
       console.error('fetchAndLoad error:', err);
       document.getElementById('loading-overlay').style.display = 'none';
@@ -355,38 +356,37 @@
     }
   }
 
-  // ── Parse CSV into flat allData array ────────────────────────────────
-  function parseAndStore(csv) {
-    const rows = parseCSV(csv);
-    // Row 0 is header — skip it
+  // ── Store JSON rows into flat allData array ───────────────────────────
+  // Apps Script returns: [{ cohort_date, segment_code, segment_name, attempt_rate, contact_rate }, ...]
+  // attempt_rate and contact_rate are already integers (e.g. 80 for 80%)
+  function parseAndStore(json) {
     allData = [];
 
-    for (let i = 1; i < rows.length; i++) {
-      const r = rows[i];
-      if (r.length < 5) continue;
+    for (const row of json) {
+      const cohort_date = clean(row['cohort_date'] || '');
+      const code        = clean(row['segment_code'] || '');
+      const name        = clean(row['segment_name'] || '').replace(/^ANYTIME FITNESS\s*/i, '').trim();
+      const attempt     = row['attempt_rate'] !== null && row['attempt_rate'] !== undefined
+                            ? Number(row['attempt_rate']) : null;
+      const contact     = row['contact_rate'] !== null && row['contact_rate'] !== undefined
+                            ? Number(row['contact_rate']) : null;
 
-      const cohort_date = clean(r[0]);
-      const code        = clean(r[1]);
-      const name        = clean(r[2]).replace(/^ANYTIME FITNESS\s*/i, '').trim();
-      const attempt     = parseRate(r[3]);
-      const contact     = parseRate(r[4]);
-
-      // Skip rows without a date or that aren't Breton clubs
+      // Skip rows with no date or not a Breton club
       if (!cohort_date || !BRETON_CODES.has(code)) continue;
 
       allData.push({ cohort_date, name, attempt, contact });
     }
 
-    console.log('Total Breton rows parsed:', allData.length);
-    console.log('Sample rows:', allData.slice(0, 4));
+    console.log('Total Breton rows stored:', allData.length);
+    console.log('Sample allData:', allData.slice(0, 4));
 
-    // Build dropdown from unique dates found in allData
+    // Build dropdown from unique cohort dates, newest first
     const uniqueDates = [...new Set(allData.map(r => r.cohort_date))].sort((a, b) => {
       const toMs = s => {
         const parts = s.split('/');
         return new Date(2026, Number(parts[0]) - 1, Number(parts[1])).getTime();
       };
-      return toMs(b) - toMs(a); // newest first
+      return toMs(b) - toMs(a);
     });
 
     console.log('Unique cohort dates:', uniqueDates);
@@ -516,30 +516,6 @@
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
-  function parseCSV(text) {
-    const rows = [];
-    const lines = text.trim().split('\n');
-    for (const line of lines) {
-      const cols = [];
-      let cur = '', inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') { inQ = !inQ; }
-        else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-        else { cur += ch; }
-      }
-      cols.push(cur.trim());
-      rows.push(cols);
-    }
-    return rows;
-  }
-
-  function parseRate(val) {
-    if (!val || val.trim() === '' || val.trim() === '#N/A') return null;
-    const n = parseFloat(val.replace('%', ''));
-    return isNaN(n) ? null : n;
-  }
-
   function badgeClass(v) {
     if (v === null) return 'badge-red';
     if (v >= 100)   return 'badge-green';
