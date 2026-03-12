@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Breton Group | Club Performance Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:        #0d1b2e;
+      --navy-mid:    #132338;
+      --navy-card:   #1a2e46;
+      --navy-border: #243c5a;
+      --accent:      #3b82f6;
+      --white:       #f0f6ff;
+      --muted:       #7a9ab8;
+      --green:       #22c55e;
+      --green-bg:    rgba(34,197,94,0.12);
+      --orange:      #f59e0b;
+      --orange-bg:   rgba(245,158,11,0.12);
+      --red:         #ef4444;
+      --red-bg:      rgba(239,68,68,0.12);
+      --radius:      10px;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--navy); color: var(--white);
+      min-height: 100vh; line-height: 1.5;
+    }
+
+    /* Header */
+    header {
+      background: var(--navy-mid); border-bottom: 1px solid var(--navy-border);
+      padding: 0 2rem; display: flex; align-items: center;
+      justify-content: space-between; height: 72px;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .logo-mark {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 9px; display: flex; align-items: center;
+      justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0;
+    }
+    .brand-block h1 { font-size: 1.15rem; font-weight: 700; }
+    .brand-block p  { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    .header-right   { display: flex; align-items: center; gap: 1rem; }
+    .powered-by     { font-size: 0.7rem; color: var(--muted); text-align: right; line-height: 1.4; }
+    .powered-by strong { color: var(--accent); }
+    .pill {
+      font-size: 0.72rem; color: var(--muted);
+      background: var(--navy); border: 1px solid var(--navy-border);
+      padding: 5px 14px; border-radius: 20px; white-space: nowrap;
+    }
+
+    /* Main */
+    main { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
+
+    /* Controls */
+    .controls {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem;
+    }
+    .controls-left h2 { font-size: 1.35rem; font-weight: 700; }
+    .controls-left p  { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+    .controls-right   { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .select-label     { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+    select, button {
+      font-family: inherit; font-size: 0.85rem;
+      border-radius: var(--radius); border: 1px solid var(--navy-border);
+      background: var(--navy-card); color: var(--white);
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    select {
+      padding: 8px 34px 8px 12px; appearance: none; min-width: 200px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a9ab8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
+    select:hover, select:focus { border-color: var(--accent); outline: none; }
+    .btn-refresh {
+      padding: 8px 18px; background: var(--accent); border: none;
+      font-weight: 600; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-refresh:hover { background: #2563eb; }
+
+    /* KPI Cards */
+    .kpi-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 1rem; margin-bottom: 1.75rem;
+    }
+    .kpi-card {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: var(--radius); padding: 1.2rem 1.4rem;
+      position: relative; overflow: hidden;
+    }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .kpi-card.blue::before   { background: var(--accent); }
+    .kpi-card.green::before  { background: var(--green); }
+    .kpi-card.orange::before { background: var(--orange); }
+    .kpi-card.red::before    { background: var(--red); }
+    .kpi-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.09em; margin-bottom: 0.45rem; }
+    .kpi-value { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .kpi-sub   { font-size: 0.73rem; color: var(--muted); margin-top: 4px; }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1.25rem; align-items: start;
+    }
+    @media (max-width: 920px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+    /* Card */
+    .card {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: var(--radius); overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .card-header {
+      padding: 1rem 1.25rem 0.85rem; border-bottom: 1px solid var(--navy-border);
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .card-title    { font-size: 0.9rem; font-weight: 700; }
+    .card-subtitle { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+    /* Legend */
+    .legend { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; flex-shrink: 0; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.71rem; color: var(--muted); }
+    .legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead tr { background: rgba(255,255,255,0.03); }
+    th {
+      padding: 10px 14px; text-align: left; font-size: 0.69rem;
+      text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted);
+      border-bottom: 1px solid var(--navy-border); white-space: nowrap;
+    }
+    th.center { text-align: center; }
+    td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    td.center { text-align: center; }
+    tbody tr:hover { background: rgba(59,130,246,0.05); }
+    tbody tr:last-child td { border-bottom: none; }
+    .club-name {
+      font-weight: 500; font-size: 0.8rem;
+      max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 62px; padding: 3px 10px; border-radius: 20px;
+      font-weight: 700; font-size: 0.77rem;
+    }
+    .badge-green  { background: var(--green-bg);  color: var(--green); }
+    .badge-orange { background: var(--orange-bg); color: var(--orange); }
+    .badge-red    { background: var(--red-bg);    color: var(--red); }
+    .dot {
+      display: inline-block; width: 7px; height: 7px;
+      border-radius: 50%; margin-right: 8px; flex-shrink: 0; vertical-align: middle;
+    }
+
+    /* Chart */
+    .chart-wrap { padding: 1.25rem; }
+    #perfChart  { width: 100% !important; }
+
+    /* Loading */
+    #loading-overlay {
+      position: fixed; inset: 0; background: var(--navy);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem; z-index: 999;
+    }
+    .spinner {
+      width: 44px; height: 44px; border: 3px solid var(--navy-border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading-overlay p { font-size: 0.85rem; color: var(--muted); }
+
+    /* Error */
+    .error-banner {
+      display: none; background: var(--red-bg); border: 1px solid var(--red);
+      color: var(--red); border-radius: var(--radius);
+      padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.85rem;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center; padding: 1.5rem; font-size: 0.72rem; color: var(--muted);
+      border-top: 1px solid var(--navy-border); margin-top: 2.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <p>Loading club performance data…</p>
+</div>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">BG</div>
+    <div class="brand-block">
+      <h1>Breton Group</h1>
+      <p>Anytime Fitness &nbsp;·&nbsp; Club Performance Dashboard</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="powered-by">Powered by <strong>Vi</strong><br>Client Insights</div>
+    <div class="pill" id="refresh-pill">Loading…</div>
+  </div>
+</header>
+
+<main>
+  <div class="error-banner" id="error-banner">
+    ⚠ &nbsp;Unable to load data. Check your internet connection and try refreshing.
+  </div>
+
+  <div class="controls">
+    <div class="controls-left">
+      <h2>Club Performance Overview</h2>
+      <p>Cohort-based Attempt Rate &amp; Contact Rate across Breton Group locations</p>
+    </div>
+    <div class="controls-right">
+      <span class="select-label">Cohort Week:</span>
+      <select id="week-select">
+        <option value="">Loading…</option>
+      </select>
+      <button class="btn-refresh" onclick="fetchAndLoad()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card blue">
+      <div class="kpi-label">Total Clubs</div>
+      <div class="kpi-value" id="kpi-total">–</div>
+      <div class="kpi-sub">This cohort week</div>
+    </div>
+    <div class="kpi-card green" id="card-attempt">
+      <div class="kpi-label">Avg Attempt Rate</div>
+      <div class="kpi-value" id="kpi-attempt">–</div>
+      <div class="kpi-sub">Across all clubs</div>
+    </div>
+    <div class="kpi-card green" id="card-contact">
+      <div class="kpi-label">Avg Contact Rate</div>
+      <div class="kpi-value" id="kpi-contact">–</div>
+      <div class="kpi-sub">Across all clubs</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">At 100% Attempt</div>
+      <div class="kpi-value" id="kpi-full">–</div>
+      <div class="kpi-sub">Clubs fully on-track</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">At 0% Attempt</div>
+      <div class="kpi-value" id="kpi-zero">–</div>
+      <div class="kpi-sub">Not yet started</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Club-by-Club Breakdown</div>
+          <div class="card-subtitle">Sorted by Attempt Rate, high to low</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--green)"></div>100%</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--orange)"></div>1–99%</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--red)"></div>0% / N/A</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Club Location</th>
+              <th class="center">Attempt Rate</th>
+              <th class="center">Contact Rate</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Performance Comparison</div>
+          <div class="card-subtitle">Attempt Rate vs. Contact Rate per club</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="perfChart"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  &copy; 2026 Vi &nbsp;·&nbsp; Breton Group Confidential &nbsp;·&nbsp;
+  Data sourced live from Google Sheets &nbsp;·&nbsp; For client review only
+</footer>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────────────
+  const SHEET_ID     = '1_Ms7p7rRJPSwbsmfmdsEnYPyGl71k3gCu9ZNFRIres4';
+  const RAW_DATA_GID = '1487060119';
+  const PROXY        = 'https://api.allorigins.win/raw?url=';
+
+  const BRETON_CODES = new Set([
+    '846','1652','182599','183136','184393','172','273','1649',
+    '182487','183098','183167','183275','183279','184057','184470',
+    '185494','185761','186825','186826'
+  ]);
+
+  // ── State: flat array of every Breton row ────────────────────────────
+  // Each entry: { cohort_date: string, name: string, attempt: number|null, contact: number|null }
+  let allData = [];
+  let chart   = null;
+  let countdown = 300;
+  let lastStr   = '';
+
+  // Strip ALL non-printable / whitespace chars including \r, \n, \t, nbsp
+  function clean(str) {
+    return String(str).replace(/[\r\n\t]/g, '').trim();
+  }
+
+  // ── Fetch ─────────────────────────────────────────────────────────────
+  async function fetchAndLoad() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+    document.getElementById('error-banner').style.display   = 'none';
+
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=' + RAW_DATA_GID;
+    const url      = PROXY + encodeURIComponent(sheetUrl);
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const csv = await res.text();
+      if (csv.includes('Request Timeout') || csv.includes('Oops')) throw new Error('Proxy timeout');
+      parseAndStore(csv);
+    } catch (err) {
+      console.error('fetchAndLoad error:', err);
+      document.getElementById('loading-overlay').style.display = 'none';
+      document.getElementById('error-banner').style.display   = 'block';
+    }
+  }
+
+  // ── Parse CSV into flat allData array ────────────────────────────────
+  function parseAndStore(csv) {
+    const rows = parseCSV(csv);
+    // Row 0 is header — skip it
+    allData = [];
+
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (r.length < 5) continue;
+
+      const cohort_date = clean(r[0]);
+      const code        = clean(r[1]);
+      const name        = clean(r[2]).replace(/^ANYTIME FITNESS\s*/i, '').trim();
+      const attempt     = parseRate(r[3]);
+      const contact     = parseRate(r[4]);
+
+      // Skip rows without a date or that aren't Breton clubs
+      if (!cohort_date || !BRETON_CODES.has(code)) continue;
+
+      allData.push({ cohort_date, name, attempt, contact });
+    }
+
+    console.log('Total Breton rows parsed:', allData.length);
+    console.log('Sample rows:', allData.slice(0, 4));
+
+    // Build dropdown from unique dates found in allData
+    const uniqueDates = [...new Set(allData.map(r => r.cohort_date))].sort((a, b) => {
+      const toMs = s => {
+        const parts = s.split('/');
+        return new Date(2026, Number(parts[0]) - 1, Number(parts[1])).getTime();
+      };
+      return toMs(b) - toMs(a); // newest first
+    });
+
+    console.log('Unique cohort dates:', uniqueDates);
+
+    const sel = document.getElementById('week-select');
+    sel.innerHTML = uniqueDates.map(d => '<option value="' + d + '">Week of ' + d + '</option>').join('');
+
+    // Render the first (newest) week immediately
+    renderWeek();
+  }
+
+  // ── Dropdown change → filter and re-render ───────────────────────────
+  function renderWeek() {
+    const selectedDate = clean(document.getElementById('week-select').value);
+
+    console.log('renderWeek() — selectedDate:', JSON.stringify(selectedDate));
+
+    // Filter allData to only rows where cohort_date exactly matches
+    const filtered = allData.filter(r => clean(r.cohort_date) === selectedDate);
+
+    console.log('Filtered row count:', filtered.length);
+    console.log('Filtered rows:', filtered);
+
+    // Sort: 100% → partial → 0%/null
+    const clubs = filtered.slice().sort((a, b) => {
+      const rank = v => (v === null ? -1 : v);
+      return rank(b.attempt) - rank(a.attempt);
+    });
+
+    renderKPIs(clubs);
+    renderTable(clubs);
+    renderChart(clubs);
+
+    const now = new Date();
+    lastStr   = 'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    countdown = 300;
+    document.getElementById('refresh-pill').textContent = lastStr;
+    document.getElementById('loading-overlay').style.display = 'none';
+  }
+
+  // ── KPI cards ───────────────────────────────────────────────────────
+  function renderKPIs(clubs) {
+    const withA = clubs.filter(c => c.attempt !== null);
+    const withC = clubs.filter(c => c.contact !== null);
+    const avgA  = withA.length ? Math.round(withA.reduce((s, c) => s + c.attempt, 0) / withA.length) : 0;
+    const avgC  = withC.length ? Math.round(withC.reduce((s, c) => s + c.contact, 0) / withC.length) : 0;
+
+    document.getElementById('kpi-total').textContent   = clubs.length;
+    document.getElementById('kpi-attempt').textContent = avgA + '%';
+    document.getElementById('kpi-contact').textContent = avgC + '%';
+    document.getElementById('kpi-full').textContent    = clubs.filter(c => c.attempt >= 100).length;
+    document.getElementById('kpi-zero').textContent    = clubs.filter(c => !c.attempt).length;
+    document.getElementById('card-attempt').className  = kpiColor(avgA);
+    document.getElementById('card-contact').className  = kpiColor(avgC);
+  }
+
+  // ── Table ────────────────────────────────────────────────────────────
+  function renderTable(clubs) {
+    document.getElementById('table-body').innerHTML = clubs.map((c, i) => `
+      <tr>
+        <td style="color:var(--muted);font-size:.74rem;font-weight:600;width:32px">${String(i+1).padStart(2,'0')}</td>
+        <td>
+          <div style="display:flex;align-items:center">
+            <span class="dot" style="background:${dotColor(c.attempt)}"></span>
+            <span class="club-name">${c.name}</span>
+          </div>
+        </td>
+        <td class="center"><span class="badge ${badgeClass(c.attempt)}">${badgeText(c.attempt)}</span></td>
+        <td class="center"><span class="badge ${badgeClass(c.contact)}">${badgeText(c.contact)}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  // ── Chart ─────────────────────────────────────────────────────────────
+  function renderChart(clubs) {
+    if (chart) chart.destroy();
+    const canvas = document.getElementById('perfChart');
+    canvas.style.height = Math.max(400, clubs.length * 36) + 'px';
+
+    chart = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: clubs.map(c => c.name),
+        datasets: [
+          {
+            label: 'Attempt Rate',
+            data: clubs.map(c => c.attempt ?? 0),
+            backgroundColor: clubs.map(c => barColor(c.attempt, 0.85)),
+            borderColor:     clubs.map(c => barColor(c.attempt, 1)),
+            borderWidth: 1, borderRadius: 4,
+          },
+          {
+            label: 'Contact Rate',
+            data: clubs.map(c => c.contact ?? 0),
+            backgroundColor: clubs.map(c => barColor(c.contact, 0.35)),
+            borderColor:     clubs.map(c => barColor(c.contact, 0.65)),
+            borderWidth: 1, borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { color: '#7a9ab8', font: { size: 11 }, boxWidth: 12, padding: 16 },
+          },
+          tooltip: {
+            backgroundColor: '#1a2e46', borderColor: '#243c5a', borderWidth: 1,
+            titleColor: '#f0f6ff', bodyColor: '#7a9ab8', padding: 10,
+            callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.raw + '%' },
+          },
+        },
+        scales: {
+          x: {
+            min: 0, max: 110,
+            ticks: { color: '#7a9ab8', font: { size: 10 }, callback: v => v + '%' },
+            grid: { color: 'rgba(255,255,255,0.05)' },
+          },
+          y: {
+            ticks: { color: '#c8d9ea', font: { size: 10.5 } },
+            grid: { display: false },
+          },
+        },
+      },
+    });
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+  function parseCSV(text) {
+    const rows = [];
+    const lines = text.trim().split('\n');
+    for (const line of lines) {
+      const cols = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else { cur += ch; }
+      }
+      cols.push(cur.trim());
+      rows.push(cols);
+    }
+    return rows;
+  }
+
+  function parseRate(val) {
+    if (!val || val.trim() === '' || val.trim() === '#N/A') return null;
+    const n = parseFloat(val.replace('%', ''));
+    return isNaN(n) ? null : n;
+  }
+
+  function badgeClass(v) {
+    if (v === null) return 'badge-red';
+    if (v >= 100)   return 'badge-green';
+    if (v > 0)      return 'badge-orange';
+    return 'badge-red';
+  }
+  function badgeText(v) { return v === null ? '#N/A' : v + '%'; }
+  function dotColor(v)  {
+    if (!v) return 'var(--red)';
+    if (v >= 100) return 'var(--green)';
+    return 'var(--orange)';
+  }
+  function barColor(v, a) {
+    if (!v) return 'rgba(239,68,68,' + a + ')';
+    if (v >= 100) return 'rgba(34,197,94,' + a + ')';
+    return 'rgba(245,158,11,' + a + ')';
+  }
+  function kpiColor(v) {
+    if (v >= 100) return 'kpi-card green';
+    if (v > 0)    return 'kpi-card orange';
+    return 'kpi-card red';
+  }
+
+  // ── Countdown pill ────────────────────────────────────────────────────
+  setInterval(() => {
+    countdown--;
+    if (countdown <= 0) { fetchAndLoad(); return; }
+    const m = Math.floor(countdown / 60);
+    const s = String(countdown % 60).padStart(2, '0');
+    document.getElementById('refresh-pill').textContent =
+      lastStr + (lastStr ? ' · ' : '') + m + ':' + s;
+  }, 1000);
+
+  // Auto-refresh every 5 minutes
+  setInterval(fetchAndLoad, 5 * 60 * 1000);
+
+  // ── Boot ──────────────────────────────────────────────────────────────
+  // Attach dropdown listener once at startup
+  document.getElementById('week-select').addEventListener('change', renderWeek);
+
+  fetchAndLoad();
+</script>
+</body>
+</html>
