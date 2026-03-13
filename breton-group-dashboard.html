@@ -85,6 +85,11 @@
     .controls-right   { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
     .select-label     { font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
 
+    /* ── Dropdown groups ── */
+    .dropdown-group { display: flex; align-items: center; gap: 0.5rem; }
+    .dropdown-group .select-label { font-size: 0.75rem; font-weight: 600; }
+    .dropdown-divider { width: 1px; height: 32px; background: var(--border); flex-shrink: 0; }
+
     select, button {
       font-family: inherit; font-size: 0.85rem;
       border-radius: var(--radius); border: 1px solid var(--border);
@@ -248,10 +253,19 @@
       <p>Cohort-based Attempt Rate &amp; Contact Rate across Breton Group locations</p>
     </div>
     <div class="controls-right">
-      <span class="select-label">Cohort Week:</span>
-      <select id="week-select">
-        <option>Loading…</option>
-      </select>
+      <div class="dropdown-group">
+        <span class="select-label">Cohort Week:</span>
+        <select id="week-select">
+          <option>Loading…</option>
+        </select>
+      </div>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-group">
+        <span class="select-label">PT Flags:</span>
+        <select id="pt-select">
+          <option>Loading…</option>
+        </select>
+      </div>
       <button class="btn-refresh" onclick="fetchData()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="23 4 23 10 17 10"/>
@@ -343,10 +357,11 @@
 <script>
   const API_URL = 'https://script.google.com/macros/s/AKfycbzwQX7Z9Q1Q2CJxi7JnwN20n9N-6_jlfvgqfrAbFicifmQT8cdt6R8VYM6sTJq1sY7d/exec';
 
-  let allData   = [];   // full API response, stored once
-  let chart     = null;
-  let countdown = 300;
-  let lastStr   = '';
+  let allData      = [];   // full API response, stored once
+  let chart        = null;
+  let countdown    = 300;
+  let lastStr      = '';
+  let activeSource = 'week'; // 'week' | 'pt' — tracks which dropdown drove the last render
 
   // ── Date helpers ──────────────────────────────────────────────────────
   // The API returns cohort_date as e.g. "Mon Dec 22 2025 00:00:00 GMT-0500 (Eastern Standard Time)"
@@ -388,21 +403,26 @@
       console.log('API rows received:', json.length);
       console.log('First row:', json[0]);
 
-      // Attach a parsed Date and stable key to every row once
-      allData = json.map(row => ({
-        raw_date:    row.cohort_date,
-        date_obj:    parseCohortDate(row.cohort_date),
-        date_key:    dateKey(parseCohortDate(row.cohort_date)),
-        date_label:  formatLabel(parseCohortDate(row.cohort_date)),
-        name:        String(row.segment_name || '').replace(/^ANYTIME FITNESS\s*/i, '').trim(),
-        attempt:     Number(row.attempt_rate),
-        contact:     Number(row.contact_rate),
-      }));
+      // Attach a parsed Date, stable key, and pt_flag to every row once
+      allData = json.map(row => {
+        const dObj = parseCohortDate(row.cohort_date);
+        return {
+          raw_date:   row.cohort_date,
+          date_obj:   dObj,
+          date_key:   dateKey(dObj),
+          date_label: formatLabel(dObj),
+          name:       String(row.segment_name || '').replace(/^ANYTIME FITNESS\s*/i, '').trim(),
+          attempt:    Number(row.attempt_rate),
+          contact:    Number(row.contact_rate),
+          pt_flag:    String(row.pt_flag || '').trim().toUpperCase(),
+        };
+      });
 
       console.log('Parsed allData sample:', allData.slice(0, 3));
       console.log('Unique date_keys:', [...new Set(allData.map(r => r.date_key + ' → ' + r.date_label))]);
+      console.log('PT flag values:', [...new Set(allData.map(r => '"' + r.pt_flag + '"'))]);
 
-      buildDropdown();
+      buildDropdowns();
 
     } catch (err) {
       console.error('fetchData error:', err);
@@ -411,12 +431,20 @@
     }
   }
 
-  // ── Build dropdown from unique weeks ─────────────────────────────────
-  function buildDropdown() {
-    // Collect unique weeks as { date_key, date_label }, sorted newest first
+  // ── Build both dropdowns ─────────────────────────────────────────────
+  function buildDropdowns() {
+    // Standard rows: pt_flag is blank
+    populateSelect('week-select', allData.filter(r => r.pt_flag === ''));
+    // PT rows: pt_flag === 'PT'
+    populateSelect('pt-select',   allData.filter(r => r.pt_flag === 'PT'));
+    // Render using whichever dropdown is currently active
+    renderWeek();
+  }
+
+  function populateSelect(selectId, rows) {
     const seen  = new Set();
     const weeks = [];
-    for (const row of allData) {
+    for (const row of rows) {
       if (!seen.has(row.date_key)) {
         seen.add(row.date_key);
         weeks.push({ key: row.date_key, label: row.date_label });
@@ -424,23 +452,31 @@
     }
     weeks.sort((a, b) => b.key.localeCompare(a.key)); // newest first
 
-    const sel = document.getElementById('week-select');
-    sel.innerHTML = weeks.map(w =>
-      '<option value="' + w.key + '">Week of ' + w.label + '</option>'
-    ).join('');
-
-    // Render the newest week immediately
-    renderWeek();
+    const sel = document.getElementById(selectId);
+    if (weeks.length === 0) {
+      sel.innerHTML = '<option value="">No data</option>';
+    } else {
+      sel.innerHTML = weeks.map(w =>
+        '<option value="' + w.key + '">Week of ' + w.label + '</option>'
+      ).join('');
+    }
   }
 
   // ── Filter + render ───────────────────────────────────────────────────
   function renderWeek() {
-    const selectedKey = document.getElementById('week-select').value;
+    let selectedKey, flagFilter;
 
-    console.log('renderWeek() — selectedKey:', selectedKey);
+    if (activeSource === 'pt') {
+      selectedKey = document.getElementById('pt-select').value;
+      flagFilter  = r => r.pt_flag === 'PT';
+    } else {
+      selectedKey = document.getElementById('week-select').value;
+      flagFilter  = r => r.pt_flag === '';
+    }
 
-    // Filter allData to rows whose date_key exactly matches the selected key
-    const filtered = allData.filter(r => r.date_key === selectedKey);
+    console.log('renderWeek() — activeSource:', activeSource, '| selectedKey:', selectedKey);
+
+    const filtered = allData.filter(r => flagFilter(r) && r.date_key === selectedKey);
 
     console.log('Filtered rows:', filtered.length);
 
@@ -583,8 +619,15 @@
 
   setInterval(fetchData, 5 * 60 * 1000);
 
-  // ── Wire dropdown ─────────────────────────────────────────────────────
-  document.getElementById('week-select').addEventListener('change', renderWeek);
+  // ── Wire dropdowns ────────────────────────────────────────────────────
+  document.getElementById('week-select').addEventListener('change', () => {
+    activeSource = 'week';
+    renderWeek();
+  });
+  document.getElementById('pt-select').addEventListener('change', () => {
+    activeSource = 'pt';
+    renderWeek();
+  });
 
   // ── Boot ──────────────────────────────────────────────────────────────
   fetchData();
