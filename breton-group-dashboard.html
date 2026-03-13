@@ -43,26 +43,16 @@
     }
     .header-left { display: flex; align-items: center; gap: 1.25rem; }
 
-    .logo-mark {
-      width: 44px; height: 44px;
-      background: var(--violet);
-      border-radius: 8px; display: flex; align-items: center;
-      justify-content: center; font-weight: 800; font-size: 0.85rem;
-      letter-spacing: -0.5px; flex-shrink: 0; color: #fff;
-    }
+    .af-logo { height: 50px; width: auto; display: block; flex-shrink: 0; }
 
-    .brand-block { display: flex; flex-direction: column; gap: 1px; }
-    .brand-block .af-label {
-      font-size: 0.6rem; font-weight: 700; letter-spacing: 0.18em;
-      text-transform: uppercase; color: rgba(255,255,255,0.5);
-    }
+    .brand-block { display: flex; flex-direction: column; gap: 2px; }
     .brand-block h1 {
-      font-size: 1.15rem; font-weight: 700; color: #fff;
+      font-size: 1.35rem; font-weight: 800; color: #fff;
       letter-spacing: 0.01em; line-height: 1.1;
     }
     .brand-block .sub {
-      font-size: 0.68rem; color: rgba(255,255,255,0.5);
-      letter-spacing: 0.04em; text-transform: uppercase;
+      font-size: 0.65rem; color: rgba(255,255,255,0.45);
+      letter-spacing: 0.12em; text-transform: uppercase;
     }
 
     .header-right { display: flex; align-items: center; gap: 1rem; }
@@ -229,9 +219,8 @@
 
 <header>
   <div class="header-left">
-    <div class="logo-mark">BG</div>
+    <img src="af-logo.png" alt="Anytime Fitness" class="af-logo" />
     <div class="brand-block">
-      <span class="af-label">Anytime Fitness</span>
       <h1>Breton Group</h1>
       <span class="sub">Club Performance Dashboard</span>
     </div>
