@@ -253,19 +253,10 @@
       <p>Cohort-based Attempt Rate &amp; Contact Rate across Breton Group locations</p>
     </div>
     <div class="controls-right">
-      <div class="dropdown-group">
-        <span class="select-label">Cohort Week:</span>
-        <select id="week-select">
-          <option>Loading…</option>
-        </select>
-      </div>
-      <div class="dropdown-divider"></div>
-      <div class="dropdown-group">
-        <span class="select-label">PT Flags:</span>
-        <select id="pt-select">
-          <option>Loading…</option>
-        </select>
-      </div>
+      <span class="select-label">Cohort Week:</span>
+      <select id="week-select">
+        <option>Loading…</option>
+      </select>
       <button class="btn-refresh" onclick="fetchData()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="23 4 23 10 17 10"/>
@@ -357,11 +348,10 @@
 <script>
   const API_URL = 'https://script.google.com/macros/s/AKfycbzwQX7Z9Q1Q2CJxi7JnwN20n9N-6_jlfvgqfrAbFicifmQT8cdt6R8VYM6sTJq1sY7d/exec';
 
-  let allData      = [];   // full API response, stored once
-  let chart        = null;
-  let countdown    = 300;
-  let lastStr      = '';
-  let activeSource = 'week'; // 'week' | 'pt' — tracks which dropdown drove the last render
+  let allData   = [];   // full API response, stored once
+  let chart     = null;
+  let countdown = 300;
+  let lastStr   = '';
 
   // ── Date helpers ──────────────────────────────────────────────────────
   // The API returns cohort_date as e.g. "Mon Dec 22 2025 00:00:00 GMT-0500 (Eastern Standard Time)"
@@ -423,7 +413,7 @@
       console.log('Unique date_keys:', [...new Set(allData.map(r => r.date_key + ' → ' + r.date_label))]);
       console.log('PT flag values:', [...new Set(allData.map(r => '"' + r.pt_flag + '"'))]);
 
-      buildDropdowns();
+      buildDropdown();
 
     } catch (err) {
       console.error('fetchData error:', err);
@@ -432,52 +422,51 @@
     }
   }
 
-  // ── Build both dropdowns ─────────────────────────────────────────────
-  function buildDropdowns() {
-    // Standard rows: pt_flag is blank
-    populateSelect('week-select', allData.filter(r => r.pt_flag === ''));
-    // PT rows: pt_flag === 'PT'
-    populateSelect('pt-select',   allData.filter(r => r.pt_flag === 'PT'));
-    // Render using whichever dropdown is currently active
-    renderWeek();
-  }
-
-  function populateSelect(selectId, rows) {
-    const seen  = new Set();
-    const weeks = [];
-    for (const row of rows) {
-      if (!seen.has(row.date_key)) {
-        seen.add(row.date_key);
-        weeks.push({ key: row.date_key, label: row.date_label });
+  // ── Build single combined dropdown ───────────────────────────────────
+  // Each option value encodes both the date key and the flag type: "{YYYYMMDD}:{flag}"
+  // e.g. "20260209:" for a regular week, "20260209:PT" for a PT week.
+  function buildDropdown() {
+    // Collect unique (date_key, pt_flag) pairs
+    const seen    = new Set();
+    const options = [];
+    for (const row of allData) {
+      const id = row.date_key + ':' + row.pt_flag;
+      if (!seen.has(id)) {
+        seen.add(id);
+        options.push({ id, date_key: row.date_key, label: row.date_label, pt_flag: row.pt_flag });
       }
     }
-    weeks.sort((a, b) => b.key.localeCompare(a.key)); // newest first
+    // Sort: newest date first; for same date, regular (blank) before PT
+    options.sort((a, b) => {
+      if (b.date_key !== a.date_key) return b.date_key.localeCompare(a.date_key);
+      return a.pt_flag.localeCompare(b.pt_flag); // '' < 'PT'
+    });
 
-    const sel = document.getElementById(selectId);
-    if (weeks.length === 0) {
-      sel.innerHTML = '<option value="">No data</option>';
-    } else {
-      sel.innerHTML = weeks.map(w =>
-        '<option value="' + w.key + '">Week of ' + w.label + '</option>'
-      ).join('');
-    }
+    const sel = document.getElementById('week-select');
+    sel.innerHTML = options.map(o => {
+      const label = o.pt_flag === 'PT'
+        ? 'PT Flags — Week of ' + o.label
+        : 'Week of ' + o.label;
+      return '<option value="' + o.id + '">' + label + '</option>';
+    }).join('');
+
+    // Default to the most recent regular week
+    const defaultOpt = options.find(o => o.pt_flag === '') || options[0];
+    if (defaultOpt) sel.value = defaultOpt.id;
+
+    renderWeek();
   }
 
   // ── Filter + render ───────────────────────────────────────────────────
   function renderWeek() {
-    let selectedKey, flagFilter;
+    const val        = document.getElementById('week-select').value;
+    const colonIdx   = val.indexOf(':');
+    const selectedKey = val.slice(0, colonIdx);
+    const selectedFlag = val.slice(colonIdx + 1); // '' or 'PT'
 
-    if (activeSource === 'pt') {
-      selectedKey = document.getElementById('pt-select').value;
-      flagFilter  = r => r.pt_flag === 'PT';
-    } else {
-      selectedKey = document.getElementById('week-select').value;
-      flagFilter  = r => r.pt_flag === '';
-    }
+    console.log('renderWeek() — selectedKey:', selectedKey, '| flag:', selectedFlag);
 
-    console.log('renderWeek() — activeSource:', activeSource, '| selectedKey:', selectedKey);
-
-    const filtered = allData.filter(r => flagFilter(r) && r.date_key === selectedKey);
+    const filtered = allData.filter(r => r.date_key === selectedKey && r.pt_flag === selectedFlag);
 
     console.log('Filtered rows:', filtered.length);
 
@@ -620,15 +609,8 @@
 
   setInterval(fetchData, 5 * 60 * 1000);
 
-  // ── Wire dropdowns ────────────────────────────────────────────────────
-  document.getElementById('week-select').addEventListener('change', () => {
-    activeSource = 'week';
-    renderWeek();
-  });
-  document.getElementById('pt-select').addEventListener('change', () => {
-    activeSource = 'pt';
-    renderWeek();
-  });
+  // ── Wire dropdown ─────────────────────────────────────────────────────
+  document.getElementById('week-select').addEventListener('change', renderWeek);
 
   // ── Boot ──────────────────────────────────────────────────────────────
   fetchData();
