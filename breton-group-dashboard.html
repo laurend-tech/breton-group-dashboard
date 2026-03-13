@@ -411,10 +411,11 @@
           date_obj:   dObj,
           date_key:   dateKey(dObj),
           date_label: formatLabel(dObj),
-          name:       String(row.segment_name || '').replace(/^ANYTIME FITNESS\s*/i, '').trim(),
-          attempt:    Number(row.attempt_rate),
-          contact:    Number(row.contact_rate),
-          pt_flag:    String(row.pt_flag || '').trim().toUpperCase(),
+          segment_code: String(row.segment_code || '').trim(),
+          name:         String(row.segment_name || '').replace(/^ANYTIME FITNESS\s*/i, '').trim(),
+          attempt:      Number(row.attempt_rate),
+          contact:      Number(row.contact_rate),
+          pt_flag:      String(row.pt_flag || '').trim().toUpperCase(),
         };
       });
 
@@ -499,7 +500,7 @@
     const avgA = clubs.length ? Math.round(clubs.reduce((s, c) => s + c.attempt, 0) / clubs.length) : 0;
     const avgC = clubs.length ? Math.round(clubs.reduce((s, c) => s + c.contact, 0) / clubs.length) : 0;
 
-    document.getElementById('kpi-total').textContent   = clubs.length;
+    document.getElementById('kpi-total').textContent   = new Set(clubs.map(c => c.segment_code)).size;
     document.getElementById('kpi-attempt').textContent = avgA + '%';
     document.getElementById('kpi-contact').textContent = avgC + '%';
     document.getElementById('kpi-full').textContent    = clubs.filter(c => c.attempt === 100).length;
