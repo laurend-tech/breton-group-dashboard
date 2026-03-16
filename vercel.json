@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/", "destination": "/breton-group-dashboard.html" },
+    { "source": "/breton-group-dashboard", "destination": "/breton-group-dashboard.html" },
     { "source": "/laura-dashboard", "destination": "/laura-dashboard.html" }
   ]
 }
